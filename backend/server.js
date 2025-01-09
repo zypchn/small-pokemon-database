@@ -10,8 +10,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api/pokemon", pokemonRoutes);
-app.use("/api/gym", gymRoutes);
 app.use("/api/trainer", trainerRoutes);
+app.use("/api/gym", gymRoutes);
 app.use("/api/deck", deckRoutes)
 
 app.listen(5000, () => console.log('Server running on port 5000'));

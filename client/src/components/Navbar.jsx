@@ -4,6 +4,9 @@ import Navbar from 'react-bootstrap/Navbar';
 import {NavDropdown} from "react-bootstrap";
 
 function CustomNavbar() {
+    
+    const regions = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
+    
     return (
         <>
             <Navbar bg="dark" data-bs-theme="dark">
@@ -13,9 +16,9 @@ function CustomNavbar() {
                         <Nav.Link href="/pokemon">Pokedex</Nav.Link>
                         <Nav.Link href="/trainer">Trainers</Nav.Link>
                         <NavDropdown title="Gyms" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="#gyms/3.1">Kanto</NavDropdown.Item>
-                            <NavDropdown.Item href="#action/3.2">Johto</NavDropdown.Item>
-                            <NavDropdown.Item href="#action/3.3">Hoenn</NavDropdown.Item>
+                            {regions && regions.map((region) => (
+                                <NavDropdown.Item href={"/gym?region=" + region} key={region}>{region}</NavDropdown.Item>
+                            ))}
                         </NavDropdown>
                     </Nav>
                 </Container>

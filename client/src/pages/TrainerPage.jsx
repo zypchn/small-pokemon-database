@@ -34,9 +34,6 @@ const TrainerPage = () => {
             setData(res.data);
         })
         .catch((err) => console.log(err));
-        
-        console.log(editRegion);
-        console.log(editName)
     }, [id]);
     
     const deleteTrainer = async (id) => {
