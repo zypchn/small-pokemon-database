@@ -51,7 +51,7 @@ router.post("/:id", (req, res) => {
 // delete a pokemon
 router.delete("/:id", (req, res) => {
     const id = req.params.id;
-    const sql = "DELETE FROM pokemons WHERE dbID=?";
+    const sql = "CALL deletePokemon(?)"
     db.query(sql, [id], (err, result) => {
         if (err) return res.json({message: "error while deleting: " + err.message});
         return res.json({success: "pokemon deleted successfully"});

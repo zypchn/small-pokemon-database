@@ -47,11 +47,10 @@ router.post("/:id", (req, res) => {
     });
 });
 
-
 // delete a gym
 router.delete("/:id", (req, res) => {
     const id = req.params.id;
-    const sql = "DELETE FROM gyms WHERE gymID=?";
+    const sql = "CALL deleteGym(?)";
     db.query(sql, [id], (err, result) => {
         if (err) return res.json({message: "error while deleting: " + err.message});
         return res.json({success: "gym deleted successfully"});

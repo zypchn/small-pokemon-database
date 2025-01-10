@@ -50,7 +50,8 @@ router.post("/:id", (req, res) => {
 // delete a trainer
 router.delete("/:id", (req, res) => {
     const id = req.params.id;
-    const sql = "DELETE FROM trainers WHERE trainerID=?";
+    const sql = "CALL deleteTrainer(?)";
+    
     db.query(sql, [id], (err, result) => {
         if (err) return res.json({message: "error while deleting: " + err.message});
         return res.json({success: "trainer deleted successfully"});

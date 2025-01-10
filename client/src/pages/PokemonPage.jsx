@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -18,13 +18,15 @@ import {
     faIcicles,
     faMagic,
     faMountain,
-    faPenToSquare, faPlus,
+    faPenToSquare,
+    faPlus,
     faSeedling,
     faSkullCrossbones,
     faTint,
     faTrashCan
 } from "@fortawesome/free-solid-svg-icons";
 import Popup from "reactjs-popup";
+import CustomNavbar from "../components/Navbar.jsx";
 
 const PokemonPage = () => {
     
@@ -36,6 +38,7 @@ const PokemonPage = () => {
     const [createID, setCreateID] = useState("");
     const [createName, setCreateName] = useState("");
     const [createType, setCreateType] = useState("");
+    const navigate = useNavigate();
     
     const types = ["Normal", "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground",
         "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"];
@@ -48,6 +51,12 @@ const PokemonPage = () => {
         border: '1px solid #ddd',
         minWidth: '300px'
     }
+    
+    useEffect( () => {
+        if (localStorage.token === undefined) {
+            navigate("/login");
+        }
+    }, []);
     
     useEffect(() => {
         axios.get(`http://localhost:5000/api/pokemon/`)
@@ -141,88 +150,40 @@ const PokemonPage = () => {
     }
     
     return (
-        <div id={"pokemons"}>
-            <table className={"pokemons-table"}>
-                <thead>
-                <tr>
-                    <th scope={"col"} style={{paddingRight: 25}}>Pokedex ID</th>
-                    <th scope={"col"} style={{paddingRight: 25}}>Pokemon Name</th>
-                    <th scope={"col"} style={{paddingRight: 50}}>Pokemon Type</th>
-                    <th scope={"col"}>
-                        <Popup
-                            trigger={<button className={"btn btn-secondary"}><FontAwesomeIcon icon={faPlus}/> Add Pokemon </button>}
-                            position={"left top"}
-                            contentStyle={popupStyle}>
-                            {close => (
-                                <form className={"popup-form"} onSubmit={(e) => {
-                                    e.preventDefault();
-                                    createPokemon().then();
-                                    close();
-                                }}>
-                                    <label className={"d-block mb-2"}> <strong>Pokedex ID:</strong>
-                                        <input type={"number"}
-                                               className={"form-control"}
-                                               onChange={(e) => setCreateID(e.target.valueAsNumber)}/>
-                                    </label>
-                                    <label className={"d-block mb-2"}> <strong>Pokemon Name:</strong>
-                                        <input type={"text"}
-                                               className={"form-control"}
-                                               onChange={(e) => setCreateName(e.target.value)}/>
-                                    </label>
-                                    <label className={"d-block mb-2"}> <strong>Pokemon Type:</strong>
-                                        <select className={"form-control"}
-                                                onChange={(e) => setCreateType(e.target.value)}>
-                                            {types && types.map((type) => (
-                                                <option key={type}>
-                                                    {type}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-                                    <input type={"submit"}/>
-                                </form>
-                            )}
-                        </Popup>
-                    </th>
-                </tr>
-                </thead>
-                {data && data.map((pokemon) => (
-                    <tbody key={pokemon.dbID}>
+        <div>
+            <CustomNavbar/>
+            <div id={"pokemons"}>
+                <table className={"pokemons-table"}>
+                    <thead>
                     <tr>
-                        <td>{pokemon.pokedexID}</td>
-                        <td>{pokemon.pokemonName}</td>
-                        <td style={{paddingRight: 50}}><FontAwesomeIcon icon={getTypeIcon(pokemon.type)}/> &nbsp; {pokemon.type}</td>
-                        <td>
+                        <th scope={"col"} style={{paddingRight: 25}}>Pokedex ID</th>
+                        <th scope={"col"} style={{paddingRight: 25}}>Pokemon Name</th>
+                        <th scope={"col"} style={{paddingRight: 50}}>Pokemon Type</th>
+                        <th scope={"col"}>
                             <Popup
-                                trigger={<button className={"btn btn-primary"}><FontAwesomeIcon icon={faPenToSquare}/>
-                                </button>}
+                                trigger={<button className={"btn btn-secondary"}><FontAwesomeIcon icon={faPlus}/> Add
+                                    Pokemon </button>}
                                 position={"left top"}
-                                contentStyle={popupStyle}
-                                onOpen={() => {
-                                    setEditID(pokemon.pokedexID);
-                                    setEditName(pokemon.pokemonName);
-                                    setEditType(pokemon.type)
-                                }}>
+                                contentStyle={popupStyle}>
                                 {close => (
                                     <form className={"popup-form"} onSubmit={(e) => {
                                         e.preventDefault();
-                                        updatePokemon(pokemon.dbID).then();
+                                        createPokemon().then();
                                         close();
                                     }}>
                                         <label className={"d-block mb-2"}> <strong>Pokedex ID:</strong>
-                                            <input type={"number"} placeholder={pokemon.pokedexID}
-                                                   defaultValue={pokemon.pokedexID}
-                                                   className="form-control"
-                                                   onChange={(e) => setEditID(e.target.valueAsNumber)}/>
+                                            <input type={"number"}
+                                                   className={"form-control"}
+                                                   onChange={(e) => setCreateID(e.target.valueAsNumber)}/>
                                         </label>
                                         <label className={"d-block mb-2"}> <strong>Pokemon Name:</strong>
-                                            <input type={"text"} defaultValue={pokemon.pokemonName}
+                                            <input type={"text"}
                                                    className={"form-control"}
-                                                   onChange={(e) => setEditName(e.target.value)}/>
+                                                   onChange={(e) => setCreateName(e.target.value)}/>
                                         </label>
                                         <label className={"d-block mb-2"}> <strong>Pokemon Type:</strong>
-                                            <select defaultValue={pokemon.type} className={"form-control"}
-                                                    onChange={(e) => setEditType(e.target.value)}>
+                                            <select className={"form-control"}
+                                                    onChange={(e) => setCreateType(e.target.value)}>
                                                 {types && types.map((type) => (
                                                     <option key={type}>
                                                         {type}
@@ -234,13 +195,67 @@ const PokemonPage = () => {
                                     </form>
                                 )}
                             </Popup>
-                            <button className={"btn btn-danger"} onClick={() => deletePokemon(pokemon.dbID)}>
-                                <FontAwesomeIcon icon={faTrashCan}/></button>
-                        </td>
+                        </th>
                     </tr>
-                    </tbody>
-                ))}
-            </table>
+                    </thead>
+                    {data && data.map((pokemon) => (
+                        <tbody key={pokemon.dbID}>
+                        <tr>
+                            <td>{pokemon.pokedexID}</td>
+                            <td>{pokemon.pokemonName}</td>
+                            <td style={{paddingRight: 50}}><FontAwesomeIcon
+                                icon={getTypeIcon(pokemon.type)}/> &nbsp; {pokemon.type}</td>
+                            <td>
+                                <Popup
+                                    trigger={<button className={"btn btn-primary"}><FontAwesomeIcon
+                                        icon={faPenToSquare}/>
+                                    </button>}
+                                    position={"left top"}
+                                    contentStyle={popupStyle}
+                                    onOpen={() => {
+                                        setEditID(pokemon.pokedexID);
+                                        setEditName(pokemon.pokemonName);
+                                        setEditType(pokemon.type)
+                                    }}>
+                                    {close => (
+                                        <form className={"popup-form"} onSubmit={(e) => {
+                                            e.preventDefault();
+                                            updatePokemon(pokemon.dbID).then();
+                                            close();
+                                        }}>
+                                            <label className={"d-block mb-2"}> <strong>Pokedex ID:</strong>
+                                                <input type={"number"} placeholder={pokemon.pokedexID}
+                                                       defaultValue={pokemon.pokedexID}
+                                                       className="form-control"
+                                                       onChange={(e) => setEditID(e.target.valueAsNumber)}/>
+                                            </label>
+                                            <label className={"d-block mb-2"}> <strong>Pokemon Name:</strong>
+                                                <input type={"text"} defaultValue={pokemon.pokemonName}
+                                                       className={"form-control"}
+                                                       onChange={(e) => setEditName(e.target.value)}/>
+                                            </label>
+                                            <label className={"d-block mb-2"}> <strong>Pokemon Type:</strong>
+                                                <select defaultValue={pokemon.type} className={"form-control"}
+                                                        onChange={(e) => setEditType(e.target.value)}>
+                                                    {types && types.map((type) => (
+                                                        <option key={type}>
+                                                            {type}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </label>
+                                            <input type={"submit"}/>
+                                        </form>
+                                    )}
+                                </Popup>
+                                <button className={"btn btn-danger"} onClick={() => deletePokemon(pokemon.dbID)}>
+                                    <FontAwesomeIcon icon={faTrashCan}/></button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    ))}
+                </table>
+            </div>
         </div>
     )
 }
