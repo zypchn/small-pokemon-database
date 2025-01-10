@@ -9,12 +9,14 @@ import CustomNavbar from "../components/Navbar.jsx";
 const TrainerPage = () => {
     
     const [data, setData] = useState([]);
+    const [pokemonData, setPokemonData] = useState([]);
     const [deckData, setDeckData] = useState([]);
     const {id} = useParams();
     const [editName, setEditName] = useState("");
     const [editRegion, setEditRegion] = useState("");
     const [createName, setCreateName] = useState("");
     const [createRegion, setCreateRegion] = useState("");
+    const [selectedPokemon, setSelectedPokemon] = useState(Array(6).fill(null));
     const navigate = useNavigate();
     
     const regions = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
@@ -43,12 +45,26 @@ const TrainerPage = () => {
     }, [id]);
     
     useEffect(() => {
-        axios.get(`http://localhost:5000/api/deck/`)
+        axios.get("http://localhost:5000/api/deck")
         .then((res) => {
-            setDeckData(res.data);
+            const grouped = res.data.reduce((acc, item) => {
+                const { trainerID, pokemonName } = item;
+                if (!acc[trainerID]) acc[trainerID] = [];
+                acc[trainerID].push(pokemonName);
+                return acc;
+            }, {});
+            setDeckData(grouped);
+        })
+        .catch((err) => console.error(err));
+    }, []);
+    
+    useEffect(() => {
+        axios.get(`http://localhost:5000/api/pokemon/`)
+        .then((res) => {
+            setPokemonData(res.data);
         })
         .catch((err) => console.log(err));
-    }, []);
+    }, [id]);
     
     const deleteTrainer = async (id) => {
         await axios.delete(`http://localhost:5000/api/trainer/${id}`)
@@ -62,7 +78,8 @@ const TrainerPage = () => {
     const updateTrainer = async (id) => {
         await axios.post(`http://localhost:5000/api/trainer/${id}`, {
             trainerName: editName,
-            trainerRegion: editRegion
+            trainerRegion: editRegion,
+            pokemonIDs: selectedPokemon
         }).then((res) => {
             setData(data.map(trainer =>
                 trainer.trainerID === id
@@ -84,20 +101,6 @@ const TrainerPage = () => {
                 {trainerName: createName, trainerRegion: createRegion}
             ]);
             console.log(res.data);
-        })
-        .catch((err) => console.log(err));
-    }
-    
-    const getDeckByID = async (id) => {
-        await axios.get(`http://localhost:5000/api/deck/${id}`)
-        .then((res) => {
-            const response = (res.data);
-            let deck = [];
-            response.forEach((r) => {
-                deck.push(r["pokemonName"]);
-            });
-            const text = deck.toString();
-            return text;
         })
         .catch((err) => console.log(err));
     }
@@ -151,7 +154,8 @@ const TrainerPage = () => {
                         <tr>
                             <td>{trainer.trainerName}</td>
                             <td>{trainer.trainerRegion}</td>
-                            <td style={{paddingRight: 25}}> {getDeckByID(trainer.trainerID)} </td>
+                            <td style={{paddingRight: 25}}> {String(deckData[trainer.trainerID])} </td>
+                            <td><button onClick={() => console.log(createDeck)}>hey</button></td>
                             <td>
                                 <Popup
                                     trigger={<button className={"btn btn-primary"}><FontAwesomeIcon
@@ -184,16 +188,28 @@ const TrainerPage = () => {
                                                     ))}
                                                 </select>
                                             </label>
+                                            {Array.from({ length: 6 }, (_, index) => (
+                                                <label className={"d-block mb-2"} key={index}> <strong>Pokemon #{index + 1}:</strong>
+                                                    <select className={"form-control"}
+                                                            onChange={(e) => {
+                                                                const newSelectedPokemon = [...selectedPokemon];
+                                                                newSelectedPokemon[index] = e.target.value;
+                                                                setSelectedPokemon(newSelectedPokemon);
+                                                            }}>
+                                                        {pokemonData && pokemonData.map((poke) => (
+                                                            <option key={poke.pokedexID} value={poke.dbID}>
+                                                                {poke.pokemonName}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </label>
+                                            ))}
                                             <input type={"submit"}/>
                                         </form>
                                     )}
                                 </Popup>
                                 <button className={"btn btn-danger"} onClick={() => deleteTrainer(trainer.trainerID)}>
                                     <FontAwesomeIcon icon={faTrashCan}/></button>
-                                <button onClick={() => {
-                                    getDeckByID(trainer.trainerID).then()
-                                }}>hey
-                                </button>
                             </td>
                         </tr>
                         </tbody>

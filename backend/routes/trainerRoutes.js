@@ -43,7 +43,16 @@ router.post("/:id", (req, res) => {
     ];
     db.query(sql, values, (err, result) => {
         if (err) return res.json({ message: "error while updating: " + err.message });
-        return res.json({ success: "trainer updated successfully" });
+        //return res.json({ success: "trainer updated successfully" });
+        const pokemonIDs = req.body.pokemonIDs;
+        const sql = "INSERT INTO trainer_pokemons (`trainerID`, `pokemonID`) values (?, ?);"
+        pokemonIDs.forEach((pID) => {
+            db.query(sql, [id, pID], (err, result) => {
+                if (err) return res.json({ message: err.message });
+                return res.json(result);
+            });
+        });
+        return res.json({ success: "trainer updated successfully"});
     });
 });
 

@@ -22,4 +22,17 @@ router.get("/:id", (req, res) => {
     });
 });
 
+// set deck
+router.post("/:id", (req, res) => {
+    const id = req.params.id;
+    const pokemonIDs = req.body.pokemonIDs;
+    const sql = "INSERT INTO trainer_pokemons (`trainerID`, `pokemonID`) values (?, ?);"
+    pokemonIDs.forEach((pID) => {
+        db.query(sql, [id, pID], (err, result) => {
+            if (err) return res.json({ message: err.message });
+            return res.json(result);
+        });
+    });
+})
+
 module.exports = router
