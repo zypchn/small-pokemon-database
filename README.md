@@ -12,7 +12,7 @@ Install dependencies
 cd backend
 npm install
 ```
-Create the database with the SQL script located in backend/public/pokemondb.sql <br/>
+Create the database with the SQL script located in backend/public/pokemon_db.sql <br/>
 Create .env file
 ```
 JWT_KET=your_jwt_key
