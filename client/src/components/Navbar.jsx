@@ -7,6 +7,10 @@ function CustomNavbar() {
     
     const regions = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
     
+    const deleteLoginToken = () => {
+        localStorage.removeItem("token");
+    }
+    
     return (
         <>
             <Navbar bg="dark" data-bs-theme="dark">
@@ -20,6 +24,7 @@ function CustomNavbar() {
                                 <NavDropdown.Item href={"/gym?region=" + region} key={region}>{region}</NavDropdown.Item>
                             ))}
                         </NavDropdown>
+                        <Nav.Link onClick={() => {deleteLoginToken()}} href={"/login"}>Logout</Nav.Link>
                     </Nav>
                 </Container>
             </Navbar>

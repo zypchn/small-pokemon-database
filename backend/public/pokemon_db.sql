@@ -51,21 +51,22 @@ END //
 DELIMITER ;
 
 delimiter //
-create procedure deletePokemon (in pokemonID int)
+create procedure deletePokemon (in p_pokemonID int)
 begin
-	delete from pokemons where dbID = pokemonID;
+	delete from pokemons where dbID = p_pokemonID;
 end //
 
-delimiter //
-create procedure deleteTrainer (in trainerID int)
-begin
-	delete from trainers where trainerID = trainerID;
-end //
+DELIMITER //
+CREATE PROCEDURE deleteTrainer(IN p_trainerID INT)
+BEGIN
+    DELETE FROM trainer_pokemons WHERE trainerID = p_trainerID;
+    DELETE FROM trainers WHERE trainerID = p_trainerID;
+END //
 
 delimiter //
-create procedure deleteGym (in gymID int)
+create procedure deleteGym (in p_gymID int)
 begin
-	delete from gyms where gymID = gymID;
+	delete from gyms where gymID = p_gymID;
 end //
 
 delimiter //

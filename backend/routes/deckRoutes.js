@@ -5,7 +5,8 @@ const router = express.Router();
 
 // get all decks
 router.get("/", (req, res) => {
-    const sql = "SELECT * FROM pokemon_decks";
+    //const sql = "SELECT * FROM pokemon_decks";
+    const sql = "select pokemonName, trainerID, pokedexID from pokemons inner join trainer_pokemons on trainer_pokemons.pokemonID = pokemons.pokedexID";
     db.query(sql, (err, result) => {
         if (err) return res.json({ message: err.message });
         return res.json(result);
@@ -21,18 +22,5 @@ router.get("/:id", (req, res) => {
         return res.json(result);
     });
 });
-
-// set deck
-router.post("/:id", (req, res) => {
-    const id = req.params.id;
-    const pokemonIDs = req.body.pokemonIDs;
-    const sql = "INSERT INTO trainer_pokemons (`trainerID`, `pokemonID`) values (?, ?);"
-    pokemonIDs.forEach((pID) => {
-        db.query(sql, [id, pID], (err, result) => {
-            if (err) return res.json({ message: err.message });
-            return res.json(result);
-        });
-    });
-})
 
 module.exports = router

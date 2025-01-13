@@ -31,18 +31,17 @@ const GymPage = () => {
         if (localStorage.token === undefined) {
             navigate("/login");
         }
-    }, []);
-    
-    useEffect(() => {
-        const currentURL = window.location.href
-        const paramString = currentURL.split("?")[1];
-        const region = paramString.split("=")[1];
-        axios.get(`http://localhost:5000/api/gym/${region}`)
-        .then((res) => {
-            setData(res.data);
-            setRegion(region);
-        })
-        .catch((err) => console.log(err));
+        else {
+            const currentURL = window.location.href
+            const paramString = currentURL.split("?")[1];
+            const region = paramString.split("=")[1];
+            axios.get(`http://localhost:5000/api/gym/${region}`)
+            .then((res) => {
+                setData(res.data);
+                setRegion(region);
+            })
+            .catch((err) => console.log(err));
+        }
     }, [id, data]);
     
     const deleteGym = async (id) => {

@@ -9,7 +9,16 @@ router.post("/create", (req, res) => {
     const values = [req.body.trainerName, req.body.trainerRegion];
     db.query(sql, values, (err, result) => {
         if (err) return res.json({message: "error while creating: " + err.message});
-        return res.json({ success: "trainer added successfully" });
+        return(res.json("trainer created successfully"));
+        /*
+        const pokemonID = req.body.pokemonID;
+        //const sql = "UPDATE trainer_pokemons SET `pokemonID`=? WHERE `trainerID`=?"
+        const sql = "INSERT INTO trainer_pokemons (`trainerID`, `pokemonID`) VALUES=(?, ?)"
+        db.query(sql, [pokemonID, id], (err, result) => {
+            if (err) return res.json({message: "error while deleting: " + err.message});
+            return res.json({success: "trainer updated successfully"});
+        });
+         */
     });
 });
 
@@ -33,7 +42,7 @@ router.get("/:id", (req, res) => {
 });
 
 // edit a trainer
-router.post("/:id", (req, res) => {
+router.post("/:id", async (req, res) => {
     const id = req.params.id;
     const sql = "UPDATE trainers SET `trainerName`=?, `trainerRegion`=? WHERE `trainerID`=?";
     const values = [
@@ -41,18 +50,14 @@ router.post("/:id", (req, res) => {
         req.body.trainerRegion,
         id
     ];
-    db.query(sql, values, (err, result) => {
+    await db.query(sql, values, (err, result) => {
         if (err) return res.json({ message: "error while updating: " + err.message });
-        //return res.json({ success: "trainer updated successfully" });
-        const pokemonIDs = req.body.pokemonIDs;
-        const sql = "INSERT INTO trainer_pokemons (`trainerID`, `pokemonID`) values (?, ?);"
-        pokemonIDs.forEach((pID) => {
-            db.query(sql, [id, pID], (err, result) => {
-                if (err) return res.json({ message: err.message });
-                return res.json(result);
-            });
+        const pokemonID = req.body.pokemonIDs;
+        const sql = "UPDATE trainer_pokemons SET `pokemonID`=? WHERE `trainerID`=?"
+        db.query(sql, [pokemonID, id], (err, result) => {
+            if (err) return res.json({message: "error while deleting: " + err.message});
+            return res.json({success: "trainer updated successfully"});
         });
-        return res.json({ success: "trainer updated successfully"});
     });
 });
 

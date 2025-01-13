@@ -16,8 +16,10 @@ const TrainerPage = () => {
     const [editRegion, setEditRegion] = useState("");
     const [createName, setCreateName] = useState("");
     const [createRegion, setCreateRegion] = useState("");
-    const [selectedPokemon, setSelectedPokemon] = useState(Array(6).fill(null));
+    const [selectedPokemon, setSelectedPokemon] = useState("");
+    const [selectedPokemonCreate, setSelectedPokemonCreate] = useState("");
     const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     
     const regions = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
     
@@ -30,11 +32,15 @@ const TrainerPage = () => {
         minWidth: '300px'
     }
     
-    useEffect( () => {
-        if (localStorage.token === undefined) {
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setIsLoggedIn(false);
             navigate("/login");
+        } else {
+            setIsLoggedIn(true);
         }
-    }, []);
+    }, [navigate]);
     
     useEffect(() => {
         axios.get(`http://localhost:5000/api/trainer/`)
@@ -47,16 +53,10 @@ const TrainerPage = () => {
     useEffect(() => {
         axios.get("http://localhost:5000/api/deck")
         .then((res) => {
-            const grouped = res.data.reduce((acc, item) => {
-                const { trainerID, pokemonName } = item;
-                if (!acc[trainerID]) acc[trainerID] = [];
-                acc[trainerID].push(pokemonName);
-                return acc;
-            }, {});
-            setDeckData(grouped);
+            setDeckData(res.data);
         })
         .catch((err) => console.error(err));
-    }, []);
+    }, [deckData]);
     
     useEffect(() => {
         axios.get(`http://localhost:5000/api/pokemon/`)
@@ -94,7 +94,8 @@ const TrainerPage = () => {
     const createTrainer = async () => {
         await axios.post(`http://localhost:5000/api/trainer/create`, {
             trainerName: createName,
-            trainerRegion: createRegion
+            trainerRegion: createRegion,
+            pokemonID: selectedPokemonCreate
         }).then((res) => {
             setData(data => [
                 ...data,
@@ -107,95 +108,48 @@ const TrainerPage = () => {
     
     return (
         <div>
-            <CustomNavbar />
-            <div id={"trainers"}>
-                <table className={"trainers-table"}>
-                    <thead>
-                    <tr>
-                        <th scope={"col"} style={{paddingRight: 25}}>Trainer Name</th>
-                        <th scope={"col"} style={{paddingRight: 25}}>Trainer Region</th>
-                        <th scope={"col"} style={{paddingRight: 50}}>Trainer Deck</th>
-                        <th scope={"col"}>
-                            <Popup
-                                trigger={<button className={"btn btn-secondary"}><FontAwesomeIcon icon={faPlus}/> Add
-                                    Trainer </button>}
-                                position={"left top"}
-                                contentStyle={popupStyle}>
-                                {close => (
-                                    <form className={"popup-form"} onSubmit={(e) => {
-                                        e.preventDefault();
-                                        createTrainer().then();
-                                        close();
-                                    }}>
-                                        <label className={"d-block mb-2"}> <strong>Trainer Name:</strong>
-                                            <input type={"text"}
-                                                   className={"form-control"}
-                                                   onChange={(e) => setCreateName(e.target.value)}/>
-                                        </label>
-                                        <label className={"d-block mb-2"}> <strong>Trainer Region:</strong>
-                                            <select className={"form-control"}
-                                                    onChange={(e) => setCreateRegion(e.target.value)}>
-                                                {regions && regions.map((region) => (
-                                                    <option key={region}>
-                                                        {region}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <input type={"submit"}/>
-                                    </form>
-                                )}
-                            </Popup>
-                        </th>
-                    </tr>
-                    </thead>
-                    {data && data.map((trainer) => (
-                        <tbody key={trainer.trainerID}>
-                        <tr>
-                            <td>{trainer.trainerName}</td>
-                            <td>{trainer.trainerRegion}</td>
-                            <td style={{paddingRight: 25}}> {String(deckData[trainer.trainerID])} </td>
-                            <td><button onClick={() => console.log(createDeck)}>hey</button></td>
-                            <td>
-                                <Popup
-                                    trigger={<button className={"btn btn-primary"}><FontAwesomeIcon
-                                        icon={faPenToSquare}/>
-                                    </button>}
-                                    position={"left top"}
-                                    contentStyle={popupStyle}
-                                    onOpen={() => {
-                                        setEditName(trainer.trainerName);
-                                        setEditRegion(trainer.trainerRegion)
-                                    }}>
-                                    {close => (
-                                        <form className={"popup-form"} onSubmit={(e) => {
-                                            e.preventDefault();
-                                            updateTrainer(trainer.trainerID).then();
-                                            close();
-                                        }}>
-                                            <label className={"d-block mb-2"}> <strong>Trainer Name:</strong>
-                                                <input type={"text"} defaultValue={trainer.trainerName}
-                                                       className={"form-control"}
-                                                       onChange={(e) => setEditName(e.target.value)}/>
-                                            </label>
-                                            <label className={"d-block mb-2"}> <strong>Trainer Region:</strong>
-                                                <select defaultValue={trainer.trainerRegion} className={"form-control"}
-                                                        onChange={(e) => setEditRegion(e.target.value)}>
-                                                    {regions && regions.map((region) => (
-                                                        <option key={region}>
-                                                            {region}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </label>
-                                            {Array.from({ length: 6 }, (_, index) => (
-                                                <label className={"d-block mb-2"} key={index}> <strong>Pokemon #{index + 1}:</strong>
+            {isLoggedIn ? (
+                <>
+                    <CustomNavbar/>
+                    <div id={"trainers"}>
+                        <table className={"trainers-table"}>
+                            <thead>
+                            <tr>
+                                <th scope={"col"} style={{paddingRight: 25}}>Trainer Name</th>
+                                <th scope={"col"} style={{paddingRight: 25}}>Trainer Region</th>
+                                <th scope={"col"} style={{paddingRight: 50}}>Trainer Companion</th>
+                                <th scope={"col"}>
+                                    <Popup
+                                        trigger={<button className={"btn btn-secondary"}><FontAwesomeIcon
+                                            icon={faPlus}/> Add
+                                            Trainer </button>}
+                                        position={"left top"}
+                                        contentStyle={popupStyle}>
+                                        {close => (
+                                            <form className={"popup-form"} onSubmit={(e) => {
+                                                e.preventDefault();
+                                                createTrainer().then();
+                                                close();
+                                            }}>
+                                                <label className={"d-block mb-2"}> <strong>Trainer Name:</strong>
+                                                    <input type={"text"}
+                                                           className={"form-control"}
+                                                           onChange={(e) => setCreateName(e.target.value)}/>
+                                                </label>
+                                                <label className={"d-block mb-2"}> <strong>Trainer Region:</strong>
                                                     <select className={"form-control"}
-                                                            onChange={(e) => {
-                                                                const newSelectedPokemon = [...selectedPokemon];
-                                                                newSelectedPokemon[index] = e.target.value;
-                                                                setSelectedPokemon(newSelectedPokemon);
-                                                            }}>
+                                                            onChange={(e) => setCreateRegion(e.target.value)}>
+                                                        {regions && regions.map((region) => (
+                                                            <option key={region}>
+                                                                {region}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </label>
+                                                <label className={"d-block mb-2"}> <strong>Trainer Companion</strong>
+                                                    <select className={"form-control"}
+                                                            defaultValue={null}
+                                                            onChange={(e) => setSelectedPokemonCreate(e.target.value)}>
                                                         {pokemonData && pokemonData.map((poke) => (
                                                             <option key={poke.pokedexID} value={poke.dbID}>
                                                                 {poke.pokemonName}
@@ -203,19 +157,85 @@ const TrainerPage = () => {
                                                         ))}
                                                     </select>
                                                 </label>
-                                            ))}
-                                            <input type={"submit"}/>
-                                        </form>
-                                    )}
-                                </Popup>
-                                <button className={"btn btn-danger"} onClick={() => deleteTrainer(trainer.trainerID)}>
-                                    <FontAwesomeIcon icon={faTrashCan}/></button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    ))}
-                </table>
-            </div>
+                                                <input type={"submit"}/>
+                                            </form>
+                                        )}
+                                    </Popup>
+                                </th>
+                            </tr>
+                            </thead>
+                            {data && data.map((trainer) => (
+                                <tbody key={trainer.trainerID}>
+                                <tr>
+                                    <td>{trainer.trainerName}</td>
+                                    <td>{trainer.trainerRegion}</td>
+                                    <td style={{paddingRight: 25}}>
+                                        {deckData.filter(pokemon => pokemon.trainerID === trainer.trainerID)
+                                        .map(pokemon => pokemon.pokemonName)}
+                                    </td>
+                                    <td>
+                                        <Popup
+                                            trigger={<button className={"btn btn-primary"}><FontAwesomeIcon
+                                                icon={faPenToSquare}/>
+                                            </button>}
+                                            position={"left top"}
+                                            contentStyle={popupStyle}
+                                            onOpen={() => {
+                                                setEditName(trainer.trainerName);
+                                                setEditRegion(trainer.trainerRegion);
+                                                const defaultPokeName = deckData.find(element => element["trainerID"] === trainer.trainerID);
+                                                setSelectedPokemon(defaultPokeName["pokedexID"]);
+                                            }}>
+                                            {close => (
+                                                <form className={"popup-form"} onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    updateTrainer(trainer.trainerID).then();
+                                                    close();
+                                                }}>
+                                                    <label className={"d-block mb-2"}> <strong>Trainer Name:</strong>
+                                                        <input type={"text"} defaultValue={trainer.trainerName}
+                                                               className={"form-control"}
+                                                               onChange={(e) => setEditName(e.target.value)}/>
+                                                    </label>
+                                                    <label className={"d-block mb-2"}> <strong>Trainer Region:</strong>
+                                                        <select defaultValue={trainer.trainerRegion}
+                                                                className={"form-control"}
+                                                                onChange={(e) => setEditRegion(e.target.value)}>
+                                                            {regions && regions.map((region) => (
+                                                                <option key={region}>
+                                                                    {region}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </label>
+                                                    <label className={"d-block mb-2"}> <strong>Trainer Companion</strong>
+                                                        <select className={"form-control"}
+                                                                defaultValue={null}
+                                                                onChange={(e) => setSelectedPokemon(e.target.value)}>
+                                                            {pokemonData && pokemonData.map((poke) => (
+                                                                <option key={poke.pokedexID} value={poke.dbID}>
+                                                                    {poke.pokemonName}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </label>
+                                                    <input type={"submit"}/>
+                                                </form>
+                                            )}
+                                        </Popup>
+                                        <button className={"btn btn-danger"}
+                                                onClick={() => deleteTrainer(trainer.trainerID)}>
+                                            <FontAwesomeIcon icon={faTrashCan}/></button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            ))}
+                        </table>
+                    </div>
+                </>
+            ) : (
+                <div>Please log in to view this page.</div>
+            )}
         </div>
     )
 }
